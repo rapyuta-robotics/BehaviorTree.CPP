@@ -71,15 +71,12 @@ NodeStatus RetryNode::tick()
     {
       ++try_count_;
       resetChild();
-      if (try_count_ < max_attempts_ || max_attempts_ == -1)
-      {
-        return BT::NodeStatus::RUNNING;
-      }
-      else
+      if (try_count_ >= max_attempts_ && max_attempts_ != -1)
       {
         try_count_ = 0;
         return BT::NodeStatus::FAILURE;
       }
+      return BT::NodeStatus::RUNNING;
     }
 
     case BT::NodeStatus::RUNNING:
