@@ -7,36 +7,22 @@ using BT::NodeStatus;
 class FinishAfterN : public BT::SyncActionNode
 {
 public:
-  FinishAfterN(const std::string& name, int N):
-    BT::SyncActionNode(name, {}), counter_(N)
+  FinishAfterN(const std::string& name, int N, const NodeStatus initial_return_value):
+    BT::SyncActionNode(name, {}), counter_(N), initial_return_value_(initial_return_value)
   {
   }
 
   NodeStatus tick() override
   {
-    if (counter_-- > 0)
-    {
-      std::string msg = return_value == NodeStatus::SUCCESS ? "SUCCESS" : "FAILURE";
-      std::cout << name() << "; " << msg << std::endl;
-      return return_value;
-    }
-    else
-    {
-      if (return_value == NodeStatus::SUCCESS)
-      {
-        std::cout << name() << "; FAILURE" << std::endl;
-        return NodeStatus::FAILURE;
-      }
-      else
-      {
-        std::cout << name() << "; SUCCESS" << std::endl;
-        return NodeStatus::SUCCESS;
-      }
-    }
+    // flip returned value after calling tick() N times
+    const NodeStatus return_val = counter_-- > 0 ? initial_return_value_ : (initial_return_value_ == NodeStatus::SUCCESS ? NodeStatus::FAILURE : NodeStatus::SUCCESS);
+    const std::string msg = return_val == NodeStatus::SUCCESS ? "SUCCESS" : "FAILURE";
+    std::cout << name() << "; " << msg << std::endl;
+    return return_val;
   }
 
-  NodeStatus return_value = NodeStatus::SUCCESS;
   private:
+    NodeStatus initial_return_value_ = NodeStatus::SUCCESS;
     int counter_ = 0;
 };
 
@@ -55,14 +41,11 @@ TEST(Retry, test)
 {
   BT::ReactiveSequence root("root");
   BT::RetryNode retry("retry", 2);
-  FinishAfterN condition_1("condition_1", 1);
-  FinishAfterN action_1("action_1", 1);
+  FinishAfterN condition_1("condition_1", 1, NodeStatus::SUCCESS);
+  FinishAfterN action_1("action_1", 1, NodeStatus::FAILURE);
   root.addChild(&condition_1);
   retry.setChild(&action_1);
   root.addChild(&retry);
-
-  condition_1.return_value = BT::NodeStatus::SUCCESS;
-  action_1.return_value = BT::NodeStatus::FAILURE;
 
   BT::NodeStatus status = root.executeTick();
   ASSERT_EQ(status, BT::NodeStatus::RUNNING);
