@@ -4,10 +4,10 @@
 
 using BT::NodeStatus;
 
-class FinishAfterN : public BT::SyncActionNode
+class FlipN : public BT::SyncActionNode
 {
 public:
-  FinishAfterN(const std::string& name, int N, const NodeStatus initial_return_value):
+  FlipN(const std::string& name, int N, const NodeStatus initial_return_value):
     BT::SyncActionNode(name, {}), counter_(N), initial_return_value_(initial_return_value)
   {
   }
@@ -41,8 +41,8 @@ TEST(Retry, test)
 {
   BT::ReactiveSequence root("root");
   BT::RetryNode retry("retry", 2);
-  FinishAfterN condition_1("condition_1", 1, NodeStatus::SUCCESS);
-  FinishAfterN action_1("action_1", 1, NodeStatus::FAILURE);
+  FlipN condition_1("condition_1", 1, NodeStatus::SUCCESS);
+  FlipN action_1("action_1", 1, NodeStatus::FAILURE);
   root.addChild(&condition_1);
   retry.setChild(&action_1);
   root.addChild(&retry);
