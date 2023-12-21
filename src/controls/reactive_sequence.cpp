@@ -26,12 +26,12 @@ NodeStatus ReactiveSequence::tick()
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
-        // reset the previous children, to make sure that they are in IDLE state
-        // the next time we tick them
-        for (size_t i = 0; i < index; i++)
+        // halt all future children
+        for (size_t i = index + 1; i < childrenCount(); i++)
         {
           haltChild(i);
         }
+
         return NodeStatus::RUNNING;
       }
 
@@ -49,7 +49,6 @@ NodeStatus ReactiveSequence::tick()
       }
     }   // end switch
   }     //end for
-
 
   if (success_count == childrenCount())
   {
