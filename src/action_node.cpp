@@ -125,7 +125,7 @@ NodeStatus StatefulActionNode::tick()
 {
   const NodeStatus initial_status = status();
 
-  if (initial_status == NodeStatus::IDLE)
+  if (initial_status != NodeStatus::RUNNING)
   {
     NodeStatus new_status = onStart();
     if (new_status == NodeStatus::IDLE)

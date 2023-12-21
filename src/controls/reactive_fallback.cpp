@@ -26,12 +26,14 @@ NodeStatus ReactiveFallback::tick()
     switch (child_status)
     {
       case NodeStatus::RUNNING: {
-
-        // reset the previous children, to make sure that they are in IDLE state
-        // the next time we tick them
-        for (size_t i = 0; i < index; i++)
+        // reset the previous children, to make sure that they are in IDLE state the
+        // next time we tick them, and the following children to stop anyone running
+        for (size_t i = 0; i < childrenCount(); i++)
         {
-          haltChild(i);
+          if (i != index)
+          {
+            haltChild(i);
+          }
         }
         return NodeStatus::RUNNING;
       }
