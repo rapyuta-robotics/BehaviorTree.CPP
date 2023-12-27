@@ -231,7 +231,7 @@ NodeType convertFromString<NodeType>(StringView str)
     return NodeType::CONTROL;
   if (str == "Decorator")
     return NodeType::DECORATOR;
-  if (str == "SubTree" || str == "SubTreePlus")
+  if (str == "SubTree")
     return NodeType::SUBTREE;
   return NodeType::UNDEFINED;
 }

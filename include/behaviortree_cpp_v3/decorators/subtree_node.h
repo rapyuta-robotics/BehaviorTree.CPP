@@ -8,35 +8,8 @@ namespace BT
 /**
  * @brief The SubtreeNode is a way to wrap an entire Subtree,
  * creating a separated BlackBoard.
- * If you want to have data flow through ports, you need to explicitly
- * remap the ports.
- */
-class SubtreeNode : public DecoratorNode
-{
-public:
-  SubtreeNode(const std::string& name);
-
-  virtual ~SubtreeNode() override = default;
-
-private:
-  virtual BT::NodeStatus tick() override;
-
-  static PortsList providedPorts()
-  {
-    return {InputPort<bool>("__shared_blackboard", false,
-                            "If false (default) the subtree has its own blackboard and "
-                            "you"
-                            "need to do port remapping to connect it to the parent")};
-  }
-
-  virtual NodeType type() const override final
-  {
-    return NodeType::SUBTREE;
-  }
-};
-
-/**
- * @brief The SubtreePlus is a new kind of subtree that gives you much more control over remapping:
+ * If you want to have data flow through ports, can either explicitly
+ * remap the ports you need, or set autoremap to true.
  *
  * Consider this example:
 
@@ -46,12 +19,12 @@ private:
         <Sequence>
 
         <SetBlackboard value="Hello" output_key="myParam" />
-        <SubTreePlus ID="Talk" param="{myParam}" />
+        <SubTree ID="Talk" param="{myParam}" />
 
-        <SubTreePlus ID="Talk" param="World" />
+        <SubTree ID="Talk" param="World" />
 
         <SetBlackboard value="Auto remapped" output_key="param" />
-        <SubTreePlus ID="Talk" __autoremap="1"  />
+        <SubTree ID="Talk" __autoremap="1"  />
 
         </Sequence>
     </BehaviorTree>
@@ -72,15 +45,15 @@ private:
  *
  * 3) Subtree: "{param}" -> Parent: "{parent}"
  *    Setting to true (or 1) the attribute "__autoremap", we are automatically remapping
- *    each port. Usefull to avoid some boilerplate.
+ *    each port. Useful to avoid some boilerplate.
 
  */
-class SubtreePlusNode : public DecoratorNode
+class SubtreeNode : public DecoratorNode
 {
 public:
-  SubtreePlusNode(const std::string& name);
+  SubtreeNode(const std::string& name);
 
-  virtual ~SubtreePlusNode() override = default;
+  virtual ~SubtreeNode() override = default;
 
 private:
   virtual BT::NodeStatus tick() override;

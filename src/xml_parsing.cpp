@@ -513,7 +513,7 @@ TreeNode::Ptr XMLParser::Pimpl::createNodeFromXML(const XMLElement* element,
 
   PortsRemapping port_remap;
 
-  if (element_name == "SubTree" || element_name == "SubTreePlus")
+  if (element_name == "SubTree")
   {
     instance_name = element->Attribute("ID");
   }
@@ -673,81 +673,40 @@ void BT::XMLParser::Pimpl::recursivelyCreateTree(const std::string& tree_ID,
 
     if (node->type() == NodeType::SUBTREE)
     {
-      if (dynamic_cast<const SubtreeNode*>(node.get()))
+      auto new_bb = Blackboard::create(blackboard);
+      output_tree.blackboard_stack.emplace_back(new_bb);
+      std::set<StringView> mapped_keys;
+      for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
+           attr = attr->Next())
       {
-        bool is_isolated = true;
-
-        for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
-             attr = attr->Next())
+        const char* attr_name = attr->Name();
+        const char* attr_value = attr->Value();
+        if (IsReservedPortname(attr->Name()))
         {
-          if (StrEqual(attr->Name(), "__shared_blackboard"))
-          {
-            is_isolated = !convertFromString<bool>(attr->Value());
-            break;
-          }
+          continue;
         }
-
-        if (!is_isolated)
+        if (StrEqual(attr_name, "__autoremap"))
         {
-          recursivelyCreateTree(node->name(), output_tree, blackboard, node);
+          bool do_autoremap = convertFromString<bool>(attr_value);
+          new_bb->enableAutoRemapping(do_autoremap);
+          continue;
+        }
+        if (TreeNode::isBlackboardPointer(attr_value))
+        {
+          // do remapping
+          StringView port_name = TreeNode::stripBlackboardPointer(attr_value);
+          new_bb->addSubtreeRemapping(attr_name, port_name);
+          mapped_keys.insert(attr_name);
         }
         else
         {
-          // Creating an isolated
-          auto new_bb = Blackboard::create(blackboard);
-
-          for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
-               attr = attr->Next())
-          {
-            if (!IsReservedPortname(attr->Name()))
-            {
-              new_bb->addSubtreeRemapping(attr->Name(), attr->Value());
-            }
-          }
-          output_tree.blackboard_stack.emplace_back(new_bb);
-          recursivelyCreateTree(node->name(), output_tree, new_bb, node);
+          // constant string: just set that constant value into the BB
+          new_bb->set(attr_name, static_cast<std::string>(attr_value));
+          mapped_keys.insert(attr_name);
         }
       }
-      else if (dynamic_cast<const SubtreePlusNode*>(node.get()))
-      {
-        auto new_bb = Blackboard::create(blackboard);
-        output_tree.blackboard_stack.emplace_back(new_bb);
-        std::set<StringView> mapped_keys;
 
-        for (const XMLAttribute* attr = element->FirstAttribute(); attr != nullptr;
-             attr = attr->Next())
-        {
-          const char* attr_name = attr->Name();
-          const char* attr_value = attr->Value();
-
-          if (IsReservedPortname(attr->Name()))
-          {
-            continue;
-          }
-          if (StrEqual(attr_name, "__autoremap"))
-          {
-            bool do_autoremap = convertFromString<bool>(attr_value);
-            new_bb->enableAutoRemapping(do_autoremap);
-            continue;
-          }
-
-          if (TreeNode::isBlackboardPointer(attr_value))
-          {
-            // do remapping
-            StringView port_name = TreeNode::stripBlackboardPointer(attr_value);
-            new_bb->addSubtreeRemapping(attr_name, port_name);
-            mapped_keys.insert(attr_name);
-          }
-          else
-          {
-            // constant string: just set that constant value into the BB
-            new_bb->set(attr_name, static_cast<std::string>(attr_value));
-            mapped_keys.insert(attr_name);
-          }
-        }
-
-        recursivelyCreateTree(node->name(), output_tree, new_bb, node);
-      }
+      recursivelyCreateTree(node->name(), output_tree, new_bb, node);
     }
     else
     {
