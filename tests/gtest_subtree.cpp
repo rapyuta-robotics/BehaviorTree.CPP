@@ -75,7 +75,7 @@ TEST(SubTree, GoodRemapping)
     <BehaviorTree ID="MainTree">
         <Sequence>
             <SetBlackboard value="hello" output_key="thoughts" />
-            <SubTree ID="CopySubtree" in_arg="thoughts" out_arg="greetings"/>
+            <SubTree ID="CopySubtree" in_arg="{thoughts}" out_arg="{greetings}"/>
             <SaySomething  message="{greetings}" />
         </Sequence>
     </BehaviorTree>
@@ -148,7 +148,7 @@ TEST(SubTree, SubtreePlusA)
     <BehaviorTree ID="MainTree">
         <Sequence>
             <SetBlackboard value="Auto remapped" output_key="param" />
-            <SubTreePlus ID="mySubtree" __autoremap="1"  />
+            <SubTree ID="mySubtree" __autoremap="1"  />
         </Sequence>
     </BehaviorTree>
 
@@ -175,7 +175,7 @@ TEST(SubTree, SubtreePlusB)
         <Sequence>
             <SetBlackboard value="Hello World" output_key="myParam" />
             <SetBlackboard value="Auto remapped" output_key="param3" />
-            <SubTreePlus ID="mySubtree" __autoremap="1" param1="{myParam}" param2="Straight Talking" />
+            <SubTree ID="mySubtree" __autoremap="1" param1="{myParam}" param2="Straight Talking" />
         </Sequence>
     </BehaviorTree>
 
@@ -206,7 +206,7 @@ TEST(SubTree, SubtreePlusC)
         <Sequence>
             <SetBlackboard value="Hello" output_key="param1" />
             <SetBlackboard value="World" output_key="param2" />
-            <SubTree ID="mySubtree" __shared_blackboard="true"/>
+            <SubTree ID="mySubtree" __autoremap="1"/>
         </Sequence>
     </BehaviorTree>
 
@@ -259,7 +259,7 @@ TEST(SubTree, SubtreePlusD)
 
     <BehaviorTree ID="MainTree">
         <Sequence>
-            <SubTreePlus ID="mySubtree" __autoremap="1"/>
+            <SubTree ID="mySubtree" __autoremap="1"/>
         </Sequence>
     </BehaviorTree>
     <BehaviorTree ID="mySubtree">
@@ -295,8 +295,8 @@ TEST(SubTree, SubtreeIssue433)
     <BehaviorTree ID="TestTree">
         <Sequence>
             <Action ID="SetBlackboard" output_key="test_port" value="1"/>
-            <SubTree ID="Subtree1" port_to_use="test_port"/>
-            <SubTree ID="Subtree2" port_to_read="test_port"/>
+            <SubTree ID="Subtree1" port_to_use="{test_port}"/>
+            <SubTree ID="Subtree2" port_to_read="{test_port}"/>
         </Sequence>
     </BehaviorTree>
 </root> )";
@@ -338,17 +338,17 @@ TEST(SubTree, SubtreeNav2_Issue563)
     <BehaviorTree ID="Tree1">
       <Sequence>
         <SetBlackboard output_key="the_message" value="hello world"/>
-        <SubTreePlus ID="Tree2" __autoremap="true"/>
+        <SubTree ID="Tree2" __autoremap="true"/>
         <SaySomething message="{reply}" />
       </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="Tree2">
-        <SubTreePlus ID="Tree3" __autoremap="true"/>
+        <SubTree ID="Tree3" __autoremap="true"/>
     </BehaviorTree>
 
     <BehaviorTree ID="Tree3">
-        <SubTreePlus ID="Talker" __autoremap="true"/>
+        <SubTree ID="Talker" __autoremap="true"/>
     </BehaviorTree>
 
     <BehaviorTree ID="Talker">
@@ -381,16 +381,16 @@ TEST(SubTree, SubtreeNav2_Issue724)
 
     <BehaviorTree ID="Tree1">
       <Sequence>
-        <SubTreePlus ID="Tree2" ros_node="{ros_node}"/>
+        <SubTree ID="Tree2" ros_node="{ros_node}"/>
       </Sequence>
     </BehaviorTree>
 
     <BehaviorTree ID="Tree2">
-        <SubTreePlus ID="Tree3" ros_node="{ros_node}"/>
+        <SubTree ID="Tree3" ros_node="{ros_node}"/>
     </BehaviorTree>
 
     <BehaviorTree ID="Tree3">
-        <SubTreePlus ID="Talker" ros_node="{ros_node}"/>
+        <SubTree ID="Talker" ros_node="{ros_node}"/>
     </BehaviorTree>
 
     <BehaviorTree ID="Talker">
@@ -423,7 +423,7 @@ TEST(SubTree, String_to_Pose_Issue623)
 <root main_tree_to_execute="Test">
   <BehaviorTree ID="Test">
     <ReactiveSequence name="MainSequence">
-      <SubTreePlus name="Visit2" ID="Visit2" tl1="1;2;3"/>
+      <SubTree name="Visit2" ID="Visit2" tl1="1;2;3"/>
     </ReactiveSequence>
   </BehaviorTree>
   <BehaviorTree ID="Visit2">
@@ -469,7 +469,7 @@ TEST(SubTree, Issue653_SetBlackboard)
 <root main_tree_to_execute = "MainTree">
   <BehaviorTree ID="MainTree">
     <Sequence>
-      <SubTreePlus ID="Init" test="{test}" />
+      <SubTree ID="Init" test="{test}" />
       <Assert condition="{test}" />
     </Sequence>
   </BehaviorTree>

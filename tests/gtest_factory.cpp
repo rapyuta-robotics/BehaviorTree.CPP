@@ -246,9 +246,9 @@ static const char* xml_ports_subtree = R"(
     <Sequence>
       <SetBlackboard output_key="talk_hello" value="hello" />
       <SetBlackboard output_key="talk_bye"   value="bye bye" />
-      <SubTree ID="TalkToMe" hello_msg="talk_hello"
-                             bye_msg="talk_bye"
-                             output="talk_out" />
+      <SubTree ID="TalkToMe" hello_msg="{talk_hello}"
+                             bye_msg="{talk_bye}"
+                             output="{talk_out}" />
       <SaySomething message="{talk_out}" />
     </Sequence>
   </BehaviorTree>
