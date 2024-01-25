@@ -166,6 +166,8 @@ public:
   template <typename T>
   Result setOutput(const std::string& key, const T& value);
 
+  Result unsetOutput(const std::string& key);
+
   // function provide mostrly for debugging purpose to see the raw value
   // in the port (no remapping and no conversion to a type)
   StringView getRawPortValue(const std::string& key) const;
@@ -317,6 +319,39 @@ inline Result TreeNode::setOutput(const std::string& key, const T& value)
     remapped_key = stripBlackboardPointer(remapped_key);
   }
   config_.blackboard->set(static_cast<std::string>(remapped_key), value);
+
+  return {};
+}
+
+inline Result TreeNode::unsetOutput(const std::string& key)
+{
+  if (!config_.blackboard)
+  {
+    return nonstd::make_unexpected("unsetOutput() failed: trying to access a "
+                                   "Blackboard(BB) entry, but BB is invalid");
+  }
+
+  auto remap_it = config_.output_ports.find(key);
+  if (remap_it == config_.output_ports.end())
+  {
+    return nonstd::make_unexpected(StrCat("unsetOutput() failed: "
+                                          "NodeConfiguration::output_ports "
+                                          "does not "
+                                          "contain the key: [",
+                                          key, "]"));
+  }
+  StringView remapped_key = remap_it->second;
+  if (remapped_key == "=")
+  {
+    remapped_key = key;
+  }
+  if (isBlackboardPointer(remapped_key))
+  {
+    remapped_key = stripBlackboardPointer(remapped_key);
+  }
+  //config_.blackboard->unset(static_cast<std::string>(remapped_key));
+  std::cerr  << "\n\n" << key  << "\t" << static_cast<std::string>(remapped_key)  << "\n\n";
+config_.blackboard->unset(key);
 
   return {};
 }

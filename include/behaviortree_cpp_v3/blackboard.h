@@ -92,6 +92,9 @@ public:
   template <typename T>
   void set(const std::string& key, const T& value)
   {
+    if (key.empty())
+      throw LogicError("Blackboard::set with empty key is not allowed");
+
     std::unique_lock<std::mutex> lock_entry(entry_mutex_);
     std::unique_lock<std::mutex> lock(mutex_);
 
@@ -142,13 +145,30 @@ public:
       {
         debugMessage();
 
-        throw LogicError("Blackboard::set() failed: once declared, the type of a port "
+        throw LogicError("Blackboard::set('", key, "') failed: once declared, the type of a port "
                          "shall not change. Declared type [",
                          BT::demangle(previous_type), "] != current type [",
                          BT::demangle(typeid(T)), "]");
       }
     }
     previous_any = std::move(new_value);
+  }
+
+  void unset(const std::string& key)
+  {
+    std::unique_lock lock(mutex_);
+
+    // check local storage
+    auto it = storage_.find(key);
+    if (it == storage_.end())
+    {
+      // No entry, nothing to do.
+      return;
+    }
+//it->second->value = Any();
+it->second.reset();
+//std::cout << "\n" << it->second->value.empty()  << "\n";
+    //storage_.erase(it);
   }
 
   const PortInfo* portInfo(const std::string& key);
