@@ -165,8 +165,10 @@ public:
       // No entry, nothing to do.
       return;
     }
-
-    storage_.erase(it);
+//it->second->value = Any();
+it->second.reset();
+//std::cout << "\n" << it->second->value.empty()  << "\n";
+    //storage_.erase(it);
   }
 
   const PortInfo* portInfo(const std::string& key);

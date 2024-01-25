@@ -334,7 +334,11 @@ inline Result TreeNode::unsetOutput(const std::string& key)
   auto remap_it = config_.output_ports.find(key);
   if (remap_it == config_.output_ports.end())
   {
-    return {};
+    return nonstd::make_unexpected(StrCat("unsetOutput() failed: "
+                                          "NodeConfiguration::output_ports "
+                                          "does not "
+                                          "contain the key: [",
+                                          key, "]"));
   }
   StringView remapped_key = remap_it->second;
   if (remapped_key == "=")
@@ -345,7 +349,9 @@ inline Result TreeNode::unsetOutput(const std::string& key)
   {
     remapped_key = stripBlackboardPointer(remapped_key);
   }
-  config_.blackboard->unset(static_cast<std::string>(remapped_key));
+  //config_.blackboard->unset(static_cast<std::string>(remapped_key));
+  std::cerr  << "\n\n" << key  << "\t" << static_cast<std::string>(remapped_key)  << "\n\n";
+config_.blackboard->unset(key);
 
   return {};
 }
